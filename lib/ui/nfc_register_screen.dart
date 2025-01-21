@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_banco_douro/data/local_data_manager.dart';
 import 'package:flutter_banco_douro/ui/styles/colors.dart';
 import 'package:flutter_banco_douro/ui/widgets/nfc_finished_widget.dart';
 import 'package:flutter_banco_douro/ui/widgets/nfc_not_valid.dart';
 import 'package:flutter_banco_douro/ui/widgets/nfc_reading_widget.dart';
+import 'package:nfc_manager/nfc_manager.dart';
 import 'widgets/nfc_welcome_widget.dart';
 
 enum _NfcSubScreens {
@@ -20,7 +22,7 @@ class NfcRegisterScreen extends StatefulWidget {
 }
 
 class _NfcRegisterScreenState extends State<NfcRegisterScreen> {
-  final _NfcSubScreens _currentSubScreen = _NfcSubScreens.welcome;
+  _NfcSubScreens _currentSubScreen = _NfcSubScreens.welcome;
   bool isReadingNfc = false;
 
   @override
@@ -97,19 +99,65 @@ class _NfcRegisterScreenState extends State<NfcRegisterScreen> {
       case _NfcSubScreens.notValid:
       case _NfcSubScreens.readCard:
       case _NfcSubScreens.finished:
+        Navigator.pushReplacementNamed(context, "login");
+        break;
     }
 
     setState(() {});
   }
 
-  onNextButtonClicked() {
+  onNextButtonClicked() async {
     switch (_currentSubScreen) {
       case _NfcSubScreens.welcome:
-      case _NfcSubScreens.notValid:
+        verifyNfcAvailable().then(
+          (bool isAvailable) {
+            if (isAvailable) {
+              startReading();
+              _currentSubScreen = _NfcSubScreens.readCard;
+            } else {
+              _currentSubScreen = _NfcSubScreens.notValid;
+            }
+          },
+        );
       case _NfcSubScreens.readCard:
+        break;
+      case _NfcSubScreens.notValid:
+        await LocalDataManager().saveIsFirstTime(false);
+        if (!mounted) return;
+        Navigator.pushReplacementNamed(context, "home");
+        break;
       case _NfcSubScreens.finished:
+        Navigator.pushReplacementNamed(context, "home");
+        break;
     }
 
     setState(() {});
+  }
+
+  Future<bool> verifyNfcAvailable() async {
+    NfcManager nfcManager = NfcManager.instance;
+    return nfcManager.isAvailable();
+  }
+
+  Future<void> startReading() async {
+    setState(() {
+      isReadingNfc = true;
+    });
+    NfcManager.instance.startSession(
+      onDiscovered: (NfcTag tag) async {
+        await NfcManager.instance.stopSession();
+
+        await LocalDataManager().saveTagId(
+          tag.data["nfca"]["identifier"].toString(),
+        );
+
+        await LocalDataManager().saveIsFirstTime(false);
+
+        setState(() {
+          isReadingNfc = false;
+          _currentSubScreen = _NfcSubScreens.finished;
+        });
+      },
+    );
   }
 }

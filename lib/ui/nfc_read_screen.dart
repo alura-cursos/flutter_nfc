@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_banco_douro/data/local_data_manager.dart';
 import 'package:flutter_banco_douro/ui/components/dialogs.dart';
 import 'package:flutter_banco_douro/ui/widgets/nfc_reading_widget.dart';
 import 'package:flutter_banco_douro/ui/widgets/nfc_start_read_widget.dart';
+import 'package:nfc_manager/nfc_manager.dart';
 
 class NfcReadScreen extends StatefulWidget {
   const NfcReadScreen({super.key});
@@ -51,8 +53,21 @@ class _NfcReadScreenState extends State<NfcReadScreen> {
     setState(() {
       isStartedRead = true;
     });
-    // TODO:
-    // Ler cartão e verificar no dados locais
+    NfcManager.instance.startSession(
+      onDiscovered: (tag) async {
+        await NfcManager.instance.stopSession();
+
+        String id = tag.data["nfca"]["identifier"].toString();
+        String savedId = (await LocalDataManager().readTagId())!;
+
+        if (id == savedId) {
+          if (!mounted) return;
+          Navigator.pushReplacementNamed(context, "home");
+        } else {
+          showWrongCardDialog();
+        }
+      },
+    );
   }
 
   void showWrongCardDialog() {
@@ -68,9 +83,9 @@ class _NfcReadScreenState extends State<NfcReadScreen> {
   }
 
   void _resetDataAndBack() async {
-    // TODO
-    // Limpar dados salvos
-    // Parar a leitura
-    // Voltar para tela de login
+    await LocalDataManager().saveIsFirstTime(true);
+    await NfcManager.instance.stopSession();
+    if (!mounted) return;
+    Navigator.pushReplacementNamed(context, "login");
   }
 }

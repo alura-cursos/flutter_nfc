@@ -13,7 +13,7 @@ class NfcFinishedWidget extends StatelessWidget {
         spacing: 16,
         children: [
           Lottie.asset(
-            "assets/lotties/check.json",
+            "assets/lotties/nfc_check.json",
             height: 256,
             repeat: false,
           ),

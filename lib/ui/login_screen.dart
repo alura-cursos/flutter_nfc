@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_banco_douro/data/local_data_manager.dart';
 import 'package:flutter_banco_douro/ui/styles/colors.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -51,7 +52,7 @@ class LoginScreen extends StatelessWidget {
                     const SizedBox(height: 32),
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.pushReplacementNamed(context, "nfc_register");
+                        routeNfcScreens(context);
                       },
                       style: const ButtonStyle(
                         backgroundColor: WidgetStatePropertyAll(
@@ -71,5 +72,23 @@ class LoginScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void routeNfcScreens(BuildContext context) async {
+    bool isFirstTime = await LocalDataManager().readIsFirstTime();
+
+    if (isFirstTime) {
+      if (!context.mounted) return;
+      Navigator.pushReplacementNamed(context, "nfc_register");
+    } else {
+      String? tagId = await LocalDataManager().readTagId();
+
+      if (!context.mounted) return;
+      if (tagId != null) {
+        Navigator.pushReplacementNamed(context, "nfc_read");
+      } else {
+        Navigator.pushReplacementNamed(context, "home");
+      }
+    }
   }
 }
