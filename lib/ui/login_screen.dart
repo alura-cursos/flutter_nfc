@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_banco_douro/data/local_data_manager.dart';
+import 'package:flutter_banco_douro/models/nfc_card.dart';
 import 'package:flutter_banco_douro/ui/styles/colors.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -81,10 +82,11 @@ class LoginScreen extends StatelessWidget {
       if (!context.mounted) return;
       Navigator.pushReplacementNamed(context, "nfc_register");
     } else {
-      String? tagId = await LocalDataManager().readTagId();
+      List<NfcCard> listCards = await LocalDataManager().getAllNfcCard();
 
       if (!context.mounted) return;
-      if (tagId != null) {
+
+      if (listCards.isNotEmpty) {
         Navigator.pushReplacementNamed(context, "nfc_read");
       } else {
         Navigator.pushReplacementNamed(context, "home");

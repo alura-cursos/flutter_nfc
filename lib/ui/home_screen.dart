@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_banco_douro/models/account.dart';
 import 'package:flutter_banco_douro/services/account_service.dart';
+import 'package:flutter_banco_douro/ui/components/home_drawer.dart';
 import 'package:flutter_banco_douro/ui/widgets/account_widget.dart';
 import 'package:flutter_banco_douro/ui/components/add_account_modal.dart';
 import 'styles/colors.dart';
@@ -36,6 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
           )
         ],
       ),
+      drawer: const HomeDrawer(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           showModalBottomSheet(

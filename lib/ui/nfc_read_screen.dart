@@ -58,9 +58,13 @@ class _NfcReadScreenState extends State<NfcReadScreen> {
         await NfcManager.instance.stopSession();
 
         String id = tag.data["nfca"]["identifier"].toString();
-        String savedId = (await LocalDataManager().readTagId())!;
+        List<String> listIds = (await LocalDataManager().getAllNfcCard())
+            .map(
+              (e) => e.id,
+            )
+            .toList();
 
-        if (id == savedId) {
+        if (listIds.contains(id)) {
           if (!mounted) return;
           Navigator.pushReplacementNamed(context, "home");
         } else {

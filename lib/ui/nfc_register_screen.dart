@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_banco_douro/data/local_data_manager.dart';
+import 'package:flutter_banco_douro/models/nfc_card.dart';
 import 'package:flutter_banco_douro/ui/styles/colors.dart';
 import 'package:flutter_banco_douro/ui/widgets/nfc_finished_widget.dart';
 import 'package:flutter_banco_douro/ui/widgets/nfc_not_valid.dart';
@@ -147,9 +148,12 @@ class _NfcRegisterScreenState extends State<NfcRegisterScreen> {
       onDiscovered: (NfcTag tag) async {
         await NfcManager.instance.stopSession();
 
-        await LocalDataManager().saveTagId(
-          tag.data["nfca"]["identifier"].toString(),
+        NfcCard nfcCard = NfcCard(
+          id: tag.data["nfca"]["identifier"].toString(),
+          description: "Primeiro registro",
         );
+
+        await LocalDataManager().addNfcCard(nfcCard);
 
         await LocalDataManager().saveIsFirstTime(false);
 
